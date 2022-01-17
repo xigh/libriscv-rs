@@ -1,4 +1,4 @@
-use crate::{Gpr, Csr};
+use crate::Gpr;
 
 pub enum Inst {
     ERROR,
@@ -61,16 +61,15 @@ pub enum Inst {
     // RV32/RV64 Zifencei Standard Extension
 
     FENCEI(Gpr, Gpr, u32),
-
+    
     // RV32/RV64 Zicsr Standard Extension
     
-    CSRRW(Gpr, Gpr, Csr),
-    CSRRS(Gpr, Gpr, Csr),
-    CSRRC(Gpr, Gpr, Csr),
-    CSRRWI(Gpr, u32, Csr),
-    CSRRSI(Gpr, u32, Csr),
-    CSRRCI(Gpr, u32, Csr),
-
+    // CSRRW(Gpr, Gpr, Csr),
+    // CSRRS(Gpr, Gpr, Csr),
+    // CSRRC(Gpr, Gpr, Csr),
+    // CSRRWI(Gpr, u32, Csr),
+    // CSRRSI(Gpr, u32, Csr),
+    // CSRRCI(Gpr, u32, Csr),
 
     // 64 bits extensions
 
@@ -114,6 +113,7 @@ pub enum Inst {
     REMW(Gpr, Gpr, Gpr),
     REMUW(Gpr, Gpr, Gpr),
 
+/*
     // Load eXclusive / Store Conditional Extension
 
     LRW(Gpr, Gpr),
@@ -280,6 +280,7 @@ pub enum Inst {
     FCVTLUQ(Gpr),
     FCVTQL(Gpr),
     FCVTQLU(Gpr),
+*/
 
     // TODO: bit manipulation
     // TODO: vector (with separate floating point H extension)
