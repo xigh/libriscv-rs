@@ -1,4 +1,4 @@
-use crate::{Inst, Gpr, ByteReader};
+use crate::{ByteReader, Gpr, Inst};
 
 #[allow(dead_code)]
 pub fn decode(bytes: &mut dyn ByteReader, is64bits: bool) -> Inst {
@@ -32,6 +32,58 @@ fn decode_quadrant3(bytes: &mut dyn ByteReader, b0: u8, is64bits: bool) -> Inst 
             0b100 => Inst::LBU(rd_bits(w), rs1_bits(w), imm11_bits(w)),
             0b101 => Inst::LHU(rd_bits(w), rs1_bits(w), imm11_bits(w)),
             0b110 => Inst::LWU(rd_bits(w), rs1_bits(w), imm11_bits(w)),
+            _ => Inst::UNDEF(w),
+        },
+        0b00011 => match funct3_bits(w) {
+            0b001 => Inst::FENCEI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
+            _ => Inst::UNDEF(w),
+        },
+        0b00100 => match funct3_bits(w) {
+            0b000 => Inst::ADDI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
+            0b001 => {
+                if is64bits {
+                    match funct6_bits(w) {
+                        00 => Inst::SLLI(rd_bits(w), rs1_bits(w), shamt64_bits(w)),
+                        _ => Inst::UNDEF(w),
+                    }
+                } else {
+                    match funct7_bits(w) {
+                        00 => Inst::SLLI(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
+                        _ => Inst::UNDEF(w),
+                    }
+                }
+            }
+            0b010 => Inst::SLTI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
+            0b011 => Inst::SLTUI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
+            0b100 => Inst::XORI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
+            0b101 => {
+                if is64bits {
+                    match funct6_bits(w) {
+                        0x00 => Inst::SRLI(rd_bits(w), rs1_bits(w), shamt64_bits(w)),
+                        0x10 => Inst::SRAI(rd_bits(w), rs1_bits(w), shamt64_bits(w)),
+                        _ => Inst::UNDEF(w),
+                    }
+                } else {
+                    match funct7_bits(w) {
+                        0x00 => Inst::SRLI(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
+                        0x20 => Inst::SRAI(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
+                        _ => Inst::UNDEF(w),
+                    }
+                }
+            }
+            0b110 => Inst::ORI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
+            0b111 => Inst::ANDI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
+            _ => unreachable!(),
+        },
+        0b00101 => Inst::AUIPC(rd_bits(w), imm20_bits(w)),
+        0b00110 => match funct3_bits(w) {
+            0x00 => Inst::ADDIW(rd_bits(w), rs1_bits(w), imm11_bits(w)),
+            0x01 => Inst::SLLIW(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
+            0x05 => match funct7_bits(w) {
+                0x00 => Inst::SRLIW(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
+                0x20 => Inst::SRAIW(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
+                _ => Inst::UNDEF(w),
+            },
             _ => Inst::UNDEF(w),
         },
         0b01000 => match funct3_bits(w) {
@@ -86,50 +138,7 @@ fn decode_quadrant3(bytes: &mut dyn ByteReader, b0: u8, is64bits: bool) -> Inst 
             },
             _ => unreachable!(),
         },
-        0b00100 => {
-            match funct3_bits(w) {
-                0b000 => Inst::ADDI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
-                0b001 => if is64bits {
-                    match funct6_bits(w) {
-                        00 => Inst::SLLI(rd_bits(w), rs1_bits(w), shamt64_bits(w)),
-                        _ => Inst::UNDEF(w),
-                    }
-                } else {
-                    match funct7_bits(w) {
-                        00 => Inst::SLLI(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
-                        _ => Inst::UNDEF(w),
-                    }
-                }
-                0b010 => Inst::SLTI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
-                0b011 => Inst::SLTUI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
-                0b100 => Inst::XORI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
-                0b101 => if is64bits {
-                    match funct6_bits(w) {
-                        0x00 => Inst::SRLI(rd_bits(w), rs1_bits(w), shamt64_bits(w)),
-                        0x10 => Inst::SRAI(rd_bits(w), rs1_bits(w), shamt64_bits(w)),
-                        _ => Inst::UNDEF(w),
-                    }
-                } else {
-                    match funct7_bits(w) {
-                        0x00 => Inst::SRLI(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
-                        0x20 => Inst::SRAI(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
-                        _ => Inst::UNDEF(w),
-                    }
-                },
-                0b110 => Inst::ORI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
-                0b111 => Inst::ANDI(rd_bits(w), rs1_bits(w), imm11_bits(w)),
-                _ => unreachable!(),
-            }
-        },
-        0b11000 => match funct3_bits(w) {
-            0b000 => Inst::BEQ(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
-            0b001 => Inst::BNE(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
-            0b100 => Inst::BLT(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
-            0b101 => Inst::BGE(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
-            0b110 => Inst::BLTU(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
-            0b111 => Inst::BGEU(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
-            _ => Inst::UNDEF(w),
-        },
+        0b01101 => Inst::LUI(rd_bits(w), imm20_bits(w)),
         0b01110 => match funct3_bits(w) {
             0b000 => match funct7_bits(w) {
                 0x00 => Inst::ADDW(rd_bits(w), rs1_bits(w), rs2_bits(w)),
@@ -160,33 +169,35 @@ fn decode_quadrant3(bytes: &mut dyn ByteReader, b0: u8, is64bits: bool) -> Inst 
                 _ => Inst::UNDEF(w),
             },
             _ => Inst::UNDEF(w),
-        }
-        0b11011 => Inst::JAL(rd_bits(w), 0),
-        0b11001 => Inst::JALR(rd_bits(w), rs1_bits(w), 0),
-        0b01101 => Inst::LUI(rd_bits(w), imm20_bits(w)),
-        0b00101 => Inst::AUIPC(rd_bits(w), imm20_bits(w)),
-        0b00110 => match funct3_bits(w) {
-            0x00 => Inst::ADDIW(rd_bits(w), rs1_bits(w), imm11_bits(w)),
-            0x01 => Inst::SLLIW(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
-            0x05 => match funct7_bits(w) {
-                0x00 => Inst::SRLIW(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
-                0x20 => Inst::SRAIW(rd_bits(w), rs1_bits(w), shamt32_bits(w)),
-                _ => Inst::UNDEF(w),
-            }
+        },
+        0b11000 => match funct3_bits(w) {
+            0b000 => Inst::BEQ(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
+            0b001 => Inst::BNE(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
+            0b100 => Inst::BLT(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
+            0b101 => Inst::BGE(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
+            0b110 => Inst::BLTU(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
+            0b111 => Inst::BGEU(rs1_bits(w), rs2_bits(w), bimm_bits(w)),
             _ => Inst::UNDEF(w),
         },
+        0b11001 => Inst::JALR(rd_bits(w), rs1_bits(w), 0),
+        0b11011 => Inst::JAL(rd_bits(w), 0),
         0b11100 => match funct3_bits(w) {
-            0x00 => match funct7_bits(w) {
+            0b000 => match funct7_bits(w) {
                 0x00 => Inst::ECALL,
                 0x01 => Inst::EBREAK,
                 _ => Inst::UNDEF(w),
             },
+            0b001 => Inst::CSRRW(rd_bits(w), rs1_bits(w), csr_bits(w)),
+            0b010 => Inst::CSRRS(rd_bits(w), rs1_bits(w), csr_bits(w)),
+            0b011 => Inst::CSRRC(rd_bits(w), rs1_bits(w), csr_bits(w)),
+            0b101 => Inst::CSRRWI(rd_bits(w), uimm_bits(w), csr_bits(w)),
+            0b110 => Inst::CSRRSI(rd_bits(w), uimm_bits(w), csr_bits(w)),
+            0b111 => Inst::CSRRCI(rd_bits(w), uimm_bits(w), csr_bits(w)),
             _ => Inst::UNDEF(w),
-        }
+        },
         _ => Inst::UNDEF(w),
     }
 }
-
 
 fn op_bits(w: u32) -> u32 {
     (w >> 2) & 0b11111

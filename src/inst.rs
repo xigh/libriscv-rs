@@ -58,18 +58,18 @@ pub enum Inst {
     ECALL,
     EBREAK,
 
-    // RV32/RV64 Zifencei Standard Extension
+    // RV32/RV64 Zifencei extensions
 
     FENCEI(Gpr, Gpr, u32),
     
-    // RV32/RV64 Zicsr Standard Extension
+    // RV32/RV64 Zicsr extensions
     
-    // CSRRW(Gpr, Gpr, Csr),
-    // CSRRS(Gpr, Gpr, Csr),
-    // CSRRC(Gpr, Gpr, Csr),
-    // CSRRWI(Gpr, u32, Csr),
-    // CSRRSI(Gpr, u32, Csr),
-    // CSRRCI(Gpr, u32, Csr),
+    CSRRW(Gpr, Gpr, Csr),
+    CSRRS(Gpr, Gpr, Csr),
+    CSRRC(Gpr, Gpr, Csr),
+    CSRRWI(Gpr, u32, Csr),
+    CSRRSI(Gpr, u32, Csr),
+    CSRRCI(Gpr, u32, Csr),
 
     // 64 bits extensions
 
