@@ -1,11 +1,14 @@
+#![feature(exclusive_range_pattern)]
+#![feature(arbitrary_enum_discriminant)]
+
 mod gpr;
 pub use gpr::Gpr;
 
 // mod fpr;
 // pub use fpr::Fpr;
 
-// mod csr;
-// pub use csr::Csr;
+mod csr;
+pub use csr::Csr;
 
 mod inst;
 pub use inst::Inst;

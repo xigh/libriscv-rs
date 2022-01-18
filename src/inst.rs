@@ -1,8 +1,8 @@
-use crate::Gpr;
+use crate::{Gpr, Csr};
 
+#[derive(Debug)]
 pub enum Inst {
     ERROR,
-    TODO,
 
     UNDEF(u32),
 
@@ -70,6 +70,12 @@ pub enum Inst {
     CSRRWI(Gpr, u32, Csr),
     CSRRSI(Gpr, u32, Csr),
     CSRRCI(Gpr, u32, Csr),
+
+    // priviledges instructions
+
+    SRET,
+    MRET,
+    WFI,
 
     // 64 bits extensions
 
