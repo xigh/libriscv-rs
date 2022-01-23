@@ -60,6 +60,7 @@ pub enum Inst {
 
     // RV32/RV64 Zifencei extensions
 
+    FENCE(Gpr, Gpr, u32),
     FENCEI(Gpr, Gpr, u32),
     
     // RV32/RV64 Zicsr extensions
@@ -119,37 +120,41 @@ pub enum Inst {
     REMW(Gpr, Gpr, Gpr),
     REMUW(Gpr, Gpr, Gpr),
 
-/*
     // Load eXclusive / Store Conditional Extension
 
     LRW(Gpr, Gpr),
-    SCW(Gpr, Gpr),
+    SCW(Gpr, Gpr, Gpr),
 
     // Load eXclusive / Store Conditional Extension (64 bits)
 
     LRD(Gpr, Gpr),
-    SCD(Gpr, Gpr),
+    SCD(Gpr, Gpr, Gpr),
 
     // Atomic Extension
 
-    AMOSWAPW(Gpr, Gpr, Gpr),
-    AMOADDW(Gpr, Gpr, Gpr),
-    AMOANDW(Gpr, Gpr, Gpr),
-    AMOORW(Gpr, Gpr, Gpr),
-    AMOXORW(Gpr, Gpr, Gpr),
-    AMOMINW(Gpr, Gpr, Gpr),
-    AMOMAXW(Gpr, Gpr, Gpr),
-
+    AMOSWAPW(Gpr, Gpr, Gpr),    // 00001 aq rl rs2 rs1 010 rd 0101111 
+    AMOADDW(Gpr, Gpr, Gpr),     // 00000 aq rl rs2 rs1 010 rd 0101111 
+    AMOXORW(Gpr, Gpr, Gpr),     // 00100 aq rl rs2 rs1 010 rd 0101111 
+    AMOANDW(Gpr, Gpr, Gpr),     // 01100 aq rl rs2 rs1 010 rd 0101111 
+    AMOORW(Gpr, Gpr, Gpr),      // 01000 aq rl rs2 rs1 010 rd 0101111 
+    AMOMINW(Gpr, Gpr, Gpr),     // 10000 aq rl rs2 rs1 010 rd 0101111 
+    AMOMAXW(Gpr, Gpr, Gpr),     // 10100 aq rl rs2 rs1 010 rd 0101111 
+    AMOMINUW(Gpr, Gpr, Gpr),    // 11000 aq rl rs2 rs1 010 rd 0101111 
+    AMOMAXUW(Gpr, Gpr, Gpr),    // 11100 aq rl rs2 rs1 010 rd 0101111 
+    
     // Atomic Extension (64 bits)
 
-    AMOSWAPD(Gpr, Gpr, Gpr),
-    AMOADDD(Gpr, Gpr, Gpr),
-    AMOANDD(Gpr, Gpr, Gpr),
-    AMOORD(Gpr, Gpr, Gpr),
-    AMOXORD(Gpr, Gpr, Gpr),
-    AMOMIND(Gpr, Gpr, Gpr),
-    AMOMAXD(Gpr, Gpr, Gpr),
+    AMOSWAPD(Gpr, Gpr, Gpr),    // 00001 aq rl rs2 rs1 011 rd 0101111 
+    AMOADDD(Gpr, Gpr, Gpr),     // 00000 aq rl rs2 rs1 011 rd 0101111 
+    AMOXORD(Gpr, Gpr, Gpr),     // 00100 aq rl rs2 rs1 011 rd 0101111 
+    AMOANDD(Gpr, Gpr, Gpr),     // 01100 aq rl rs2 rs1 011 rd 0101111 
+    AMOORD(Gpr, Gpr, Gpr),      // 01000 aq rl rs2 rs1 011 rd 0101111 
+    AMOMIND(Gpr, Gpr, Gpr),     // 10000 aq rl rs2 rs1 011 rd 0101111 
+    AMOMAXD(Gpr, Gpr, Gpr),     // 10100 aq rl rs2 rs1 011 rd 0101111 
+    AMOMINUD(Gpr, Gpr, Gpr),    // 11000 aq rl rs2 rs1 011 rd 0101111 
+    AMOMAXUD(Gpr, Gpr, Gpr),    // 11100 aq rl rs2 rs1 011 rd 0101111 
 
+/*
     // Floating Point Extension
 
     FLW(Gpr, Gpr, u32),
@@ -288,11 +293,42 @@ pub enum Inst {
     FCVTQLU(Gpr),
 */
 
+    // Supervisor Memory-Management Instructions
+
+    SFENCEVMA(Gpr, Gpr),    // 0001001 rs2 rs1 000 00000 1110011       
+    SINVALVMA(Gpr, Gpr),    // 0001011 rs2 rs1 000 00000 1110011       
+    SFENCEWINVAL,           // 0001100 00000 00000 000 00000 1110011   
+    SFENCEINVALIR,          // 0001100 00001 00000 000 00000 1110011   
+
+    // Hypervisor Memory-Management Instructions
+
+    HFENCEVVMA(Gpr, Gpr),   // 0010001 rs2 rs1 000 00000 1110011 
+    HFENCEGVMA(Gpr, Gpr),   // 0110001 rs2 rs1 000 00000 1110011 
+    HINVALVVMA(Gpr, Gpr),   // 0010011 rs2 rs1 000 00000 1110011 
+    HINVALGVMA(Gpr, Gpr),   // 0110011 rs2 rs1 000 00000 1110011 
+
+    // Hypervisor Virtual-Machine Load and Store Instructions
+
+    HLVB(Gpr, Gpr),         // 0110000 00000 rs1 100 rd 1110011 
+    HLVBU(Gpr, Gpr),        // 0110000 00001 rs1 100 rd 1110011 
+    HLVH(Gpr, Gpr),         // 0110010 00000 rs1 100 rd 1110011 
+    HLVHU(Gpr, Gpr),        // 0110010 00001 rs1 100 rd 1110011 
+    HLVXHU(Gpr, Gpr),       // 0110010 00011 rs1 100 rd 1110011 
+    HLVW(Gpr, Gpr),         // 0110100 00000 rs1 100 rd 1110011 
+    HLVXWU(Gpr, Gpr),       // 0110100 00011 rs1 100 rd 1110011 
+    HSVB(Gpr, Gpr),         // 0110001 rs2 rs1 100 00000 1110011 
+    HSVH(Gpr, Gpr),         // 0110011 rs2 rs1 100 00000 1110011 
+    HSVW(Gpr, Gpr),         // 0110101 rs2 rs1 100 00000 1110011 
+
+    // Hypervisor Virtual-Machine Load and Store Instructions, RV64 only
+
+    HLVWU(Gpr, Gpr),        // 0110100 00001 rs1 100 rd 1110011     
+    HLVD(Gpr, Gpr),         // 0110110 00000 rs1 100 rd 1110011     
+    HSVD(Gpr, Gpr),         // 0110111 rs2 rs1 100 00000 1110011    
+
     // TODO: bit manipulation
     // TODO: vector (with separate floating point H extension)
     // TODO: decimal
     // TODO: packed-simd
-    // TODO: user-level interrupts
-    // TODO: hypervisor
     // TODO: compressed instruction
 }
