@@ -1,6 +1,8 @@
 #![feature(exclusive_range_pattern)]
 #![feature(arbitrary_enum_discriminant)]
 
+mod extr;
+
 mod gpr;
 pub use gpr::Gpr;
 

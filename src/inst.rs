@@ -19,38 +19,38 @@ pub enum Inst {
     SLT(Gpr, Gpr, Gpr),
     SLTU(Gpr, Gpr, Gpr),
 
-    ADDI(Gpr, Gpr, u32),
-    XORI(Gpr, Gpr, u32),
-    ORI(Gpr, Gpr, u32),
-    ANDI(Gpr, Gpr, u32),
+    ADDI(Gpr, Gpr, i32),
+    XORI(Gpr, Gpr, i32),
+    ORI(Gpr, Gpr, i32),
+    ANDI(Gpr, Gpr, i32),
 
-    SLLI(Gpr, Gpr, u32),
-    SRLI(Gpr, Gpr, u32),
-    SRAI(Gpr, Gpr, u32),
+    SLLI(Gpr, Gpr, u8),
+    SRLI(Gpr, Gpr, u8),
+    SRAI(Gpr, Gpr, u8),
 
-    SLTI(Gpr, Gpr, u32),
+    SLTI(Gpr, Gpr, i32),
     SLTUI(Gpr, Gpr, u32),
 
-    LB(Gpr, Gpr, u32),
-    LH(Gpr, Gpr, u32),
-    LW(Gpr, Gpr, u32),
+    LB(Gpr, Gpr, i32),
+    LH(Gpr, Gpr, i32),
+    LW(Gpr, Gpr, i32),
 
-    LBU(Gpr, Gpr, u32),
-    LHU(Gpr, Gpr, u32),
+    LBU(Gpr, Gpr, i32),
+    LHU(Gpr, Gpr, i32),
 
-    SB(Gpr, Gpr, u32),
-    SH(Gpr, Gpr, u32),
-    SW(Gpr, Gpr, u32),
+    SB(Gpr, Gpr, i32),
+    SH(Gpr, Gpr, i32),
+    SW(Gpr, Gpr, i32),
 
-    BEQ(Gpr, Gpr, u32),
-    BNE(Gpr, Gpr, u32),
-    BLT(Gpr, Gpr, u32),
-    BGE(Gpr, Gpr, u32),
-    BLTU(Gpr, Gpr, u32),
-    BGEU(Gpr, Gpr, u32),
+    BEQ(Gpr, Gpr, i32),
+    BNE(Gpr, Gpr, i32),
+    BLT(Gpr, Gpr, i32),
+    BGE(Gpr, Gpr, i32),
+    BLTU(Gpr, Gpr, i32),
+    BGEU(Gpr, Gpr, i32),
 
-    JAL(Gpr, u32),
-    JALR(Gpr, Gpr, u32),
+    JAL(Gpr, i32),
+    JALR(Gpr, Gpr, i32),
 
     LUI(Gpr, u32),
     AUIPC(Gpr, u32),
@@ -60,17 +60,18 @@ pub enum Inst {
 
     // RV32/RV64 Zifencei extensions
 
-    FENCE(Gpr, Gpr, u32),
-    FENCEI(Gpr, Gpr, u32),
+    FENCE(Gpr, Gpr, i32),
+    FENCEI(Gpr, Gpr, i32),
     
     // RV32/RV64 Zicsr extensions
     
     CSRRW(Gpr, Gpr, Csr),
     CSRRS(Gpr, Gpr, Csr),
     CSRRC(Gpr, Gpr, Csr),
-    CSRRWI(Gpr, u32, Csr),
-    CSRRSI(Gpr, u32, Csr),
-    CSRRCI(Gpr, u32, Csr),
+
+    CSRRWI(Gpr, u8, Csr),
+    CSRRSI(Gpr, u8, Csr),
+    CSRRCI(Gpr, u8, Csr),
 
     // priviledges instructions
 
@@ -80,14 +81,14 @@ pub enum Inst {
 
     // 64 bits extensions
 
-    LD(Gpr, Gpr, u32),
-    LWU(Gpr, Gpr, u32),
-    SD(Gpr, Gpr, u32),
+    LD(Gpr, Gpr, i32),
+    LWU(Gpr, Gpr, i32),
+    SD(Gpr, Gpr, i32),
 
-    ADDIW(Gpr, Gpr, u32),
-    SLLIW(Gpr, Gpr, u32),
-    SRLIW(Gpr, Gpr, u32),
-    SRAIW(Gpr, Gpr, u32),
+    ADDIW(Gpr, Gpr, i32),
+    SLLIW(Gpr, Gpr, u8),
+    SRLIW(Gpr, Gpr, u8),
+    SRAIW(Gpr, Gpr, u8),
 
     ADDW(Gpr, Gpr, Gpr),
     SUBW(Gpr, Gpr, Gpr),
@@ -157,8 +158,8 @@ pub enum Inst {
 /*
     // Floating Point Extension
 
-    FLW(Gpr, Gpr, u32),
-    FSW(Gpr, Gpr, u32),
+    FLW(Gpr, Gpr, u64),
+    FSW(Gpr, Gpr, u64),
 
     FMADDS(Gpr, Gpr, Gpr, Gpr, u8),
     FMSUBS(Gpr, Gpr, Gpr, Gpr, u8),
@@ -325,6 +326,61 @@ pub enum Inst {
     HLVWU(Gpr, Gpr),        // 0110100 00001 rs1 100 rd 1110011     
     HLVD(Gpr, Gpr),         // 0110110 00000 rs1 100 rd 1110011     
     HSVD(Gpr, Gpr),         // 0110111 rs2 rs1 100 00000 1110011    
+
+    CUNDEF,
+
+    CILLEGAL,
+    CADDI4SPN,  
+    CFLD,
+    CLQ,
+    CLW,
+    CFLW,
+    CLD,
+    CFSD,
+    CSQ,
+    CSW,
+    CFSW,
+    CSD,
+
+    CNOP,
+    CADDI,
+    CJAL,
+    CADDIW,
+    CLI,
+    CADDI16SP,
+    CLUI,
+    CSRLI,
+    CSRLI64,
+    CSRAI,
+    CSRAI64,
+    CANDI,
+    CSUB,
+    CXOR,
+    COR,
+    CAND,
+    CSUBW,
+    CADDW,
+    CJ,
+    CBEQZ,
+    CBNEZ,
+
+    CSLLI,
+    CSLLI64,
+    CFLDSP,
+    CLQSP,
+    CLWSP,
+    CFLWSP,
+    CLDSP,
+    CJR,
+    CMV,
+    CEBREAK,
+    CJALR,
+    CADD,
+    CFSDSP,
+    CSQSP,
+    CSWSP,
+    CFSWSP,
+    CSDSP,
 
     // TODO: bit manipulation
     // TODO: vector (with separate floating point H extension)
